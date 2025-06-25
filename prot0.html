@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartAccount AI</title>
+
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind + Dark Mode -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a8a',
+            secondary: '#64748b',
+            bgLight: '#f8fafc',
+            bgDark: '#121827',
+            cardLight: '#ffffff',
+            cardDark: '#1f2937',
+            aquaGreen: '#3ee8c1',
+            inputBg: '#2c3e50',
+            inputBgLight: '#374b6a',
+            spikeRed: '#ef4444',
+            spikeGreen: '#22c55e',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            bebas: ['Bebas Neue', 'cursive'],
+          },
+          boxShadow: {
+            futuristic: '0 0 10px 2px rgba(30,58,138,0.7)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
+      filter: brightness(var(--brightness, 1));
+    }
+    :root {
+      --bg: #f8fafc;
+      --text: #1f2937;
+      --card-bg: #ffffff;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --brightness: 1;
+    }
+    .dark {
+      --bg: #121827;
+      --text: #e0e7ff;
+      --card-bg: #1f2937;
+      --card-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    .card {
+      background-color: var(--card-bg);
+      box-shadow: var(--card-shadow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    button {
+      transition: background-color 0.3s ease;
+    }
+
+    /* Título login */
+    #mainTitle {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 4rem;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 1rem;
+      user-select: none;
+    }
+    #mainTitle .ai {
+      color: #1e3a8a;
+    }
+    #mainTitle .smartaccount {
+      color: white;
+    }
+
+    /* Inputs e selects no dashboard */
+    #descInput,
+    #valorInput,
+    #tipoInput {
+      background-color: var(--inputBgLight);
+      color: var(--text);
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    #descInput::placeholder,
+    #valorInput::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+    #descInput:focus,
+    #valorInput:focus,
+    #tipoInput:focus {
+      outline: none;
+      background-color: var(--inputBg);
+      box-shadow: 0 0 8px #2563eb;
+      color: white;
+    }
+    /* Botão adicionar movimentação */
+    #btnAdicionar {
+      background-color: #1e3a8a;
+      color: white;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #btnAdicionar:hover {
+      background-color: #16427a;
+    }
+
+    /* Inputs login */
+    #authUsername, #authPassword {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      color: #111;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .dark #authUsername, .dark #authPassword {
+      background-color: #1f2937;
+      color: #e0e7ff;
+      border-color: #4b5563;
+    }
+    #authUsername:focus, #authPassword:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 8px #2563eb;
+      background-color: #25325e;
+      color: white;
+    }
+
+    /* Tabs */
+    .tabBtn {
+      padding: 0.5rem 1rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tabBtn.active {
+      border-bottom-color: #2563eb;
+      color: #2563eb;
+      box-shadow: 0 0 8px #2563eb;
+    }
+
+    /* Alertas Chat */
+    #alertasChat {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      max-height: 350px;
+      overflow-y: auto;
+      padding: 1rem;
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    #alertasChat .msg {
+      padding: 0.6rem 1rem;
+      border-radius: 16px;
+      max-width: 75%;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      animation: fadeIn 0.4s ease;
+    }
+    #alertasChat .msg.spike {
+      background-color: #ef4444;
+      color: white;
+      align-self: flex-start;
+      font-weight: 700;
+      box-shadow: 0 0 12px #ef4444;
+    }
+    #alertasChat .msg.info {
+      background-color: #2563eb;
+      color: white;
+      align-self: flex-end;
+      font-weight: 600;
+    }
+    #alertasChat .msg.support {
+      background-color: #64748b;
+      color: white;
+      font-style: italic;
+      align-self: center;
+      max-width: 90%;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform: translateY(10px);}
+      to {opacity:1; transform: translateY(0);}
+    }
+    /* Ícone suporte */
+    #supportIcon {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #2563eb;
+      color: white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 0 12px #2563eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 26px;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+    }
+    #supportIcon:hover {
+      background-color: #1e40af;
+    }
+    /* Chat popup suporte */
+    #supportChat {
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 320px;
+      max-height: 400px;
+      background: var(--card-bg);
+      box-shadow: var(--card-shadow);
+      border-radius: 12px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1001;
+    }
+    #supportChat header {
+      background: #2563eb;
+      color: white;
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      user-select: none;
+    }
+    #supportChatMessages {
+      flex-grow: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    #supportChat input {
+      border: none;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #supportChat input::placeholder {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Login Page -->
+  <main id="authPage" class="min-h-screen flex flex-col items-center justify-center p-6 bg-var(--bg)" role="main" aria-label="Área de autenticação">
+    <h1 id="mainTitle" class="select-none">
+      <span class="smartaccount">SMARTACCOUNT </span><span class="ai">AI</span>
+    </h1>
+
+    <section class="card text-center max-w-md w-full" tabindex="0">
+      <h1 id="authTitle" class="text-2xl font-semibold mb-6">🔐 Entrar</h1>
+      <input
+        id="authUsername"
+        type="text"
+        placeholder="Usuário"
+        class="mb-3 p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+        aria-label="Usuário"
+      />
+      <input
+        id="authPassword"
+        type="password"
+        placeholder="Senha"
+        class="mb-5 p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+        aria-label="Senha"
+      />
+      <button
+        onclick="authAction()"
+        class="w-full py-3 rounded bg-primary text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
+        aria-label="Continuar"
+      >
+        Continuar
+      </button>
+      <p class="mt-4 text-sm text-secondary">
+        <span id="authToggleText">Não tem conta?</span>
+        <button
+          onclick="toggleAuth()"
+          class="text-primary font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-primary"
+          id="authToggleBtn"
+          aria-pressed="false"
+          aria-label="Alternar entre login e cadastro"
+        >
+          Cadastre-se
+        </button>
+      </p>
+    </section>
+  </main>
+
+  <!-- Dashboard Page -->
+  <main id="dashboardPage" class="hidden min-h-screen p-6 bg-gray-50 dark:bg-[#121827] text-gray-900 dark:text-white flex flex-col" role="main" aria-label="Dashboard SmartAccount AI">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-primary select-none" data-i18n="title">📊 SmartAccount AI</h1>
+      <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-md hover:shadow-lg transition-shadow duration-300" data-i18n="logout" aria-label="Sair da conta">Sair</button>
+    </header>
+
+    <nav class="flex space-x-6 mb-6 border-b border-gray-700" role="navigation" aria-label="Menu principal">
+      <button onclick="showPage('dashboardPageContent')" id="tab-dashboard" class="tabBtn active" data-i18n="tabDashboard" aria-controls="dashboardPageContent" aria-selected="true" role="tab">Dashboard</button>
+      <button onclick="showPage('relatoriosPage')" id="tab-relatorios" class="tabBtn" data-i18n="tabReports" aria-controls="relatoriosPage" aria-selected="false" role="tab">Relatórios</button>
+      <button onclick="showPage('configPage')" id="tab-config" class="tabBtn" data-i18n="tabSettings" aria-controls="configPage" aria-selected="false" role="tab">Configurações</button>
+      <button onclick="showPage('alertasPage')" id="tab-alertas" class="tabBtn" data-i18n="tabAlerts" aria-controls="alertasPage" aria-selected="false" role="tab">Alertas</button>
+    </nav>
+
+    <!-- Dashboard -->
+    <section id="dashboardPageContent" role="tabpanel" tabindex="0">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+        <div class="card text-center shadow-futuristic">
+          <h2 class="text-lg" data-i18n="revenue">Faturamento</h2>
+          <p class="text-3xl text-primary font-bold">R$ <span id="faturamento">0.00</span></p>
+        </div>
+        <div class="card text-center shadow-futuristic">
+          <h2 class="text-lg" data-i18n="expenses">Despesas</h2>
+          <p class="text-3xl text-red-600 font-bold">R$ <span id="despesas">0.00</span></p>
+        </div>
+        <div class="card text-center shadow-futuristic">
+          <h2 class="text-lg" data-i18n="profit">Lucro</h2>
+          <p class="text-3xl text-green-600 font-bold">R$ <span id="lucro">0.00</span></p>
+        </div>
+      </div>
+
+      <div class="card max-w-4xl mx-auto">
+        <form id="movimentacaoForm" class="flex flex-col sm:flex-row items-center gap-3" aria-label="Adicionar movimentação financeira">
+          <input
+            id="descInput"
+            type="text"
+            placeholder="Descrição"
+            data-i18n-placeholder="descPlaceholder"
+            required
+            aria-required="true"
+            aria-label="Descrição da movimentação"
+          />
+          <input
+            id="valorInput"
+            type="number"
+            placeholder="Valor"
+            data-i18n-placeholder="valuePlaceholder"
+            min="0.01"
+            step="0.01"
+            required
+            aria-required="true"
+            aria-label="Valor da movimentação"
+          />
+          <select
+            id="tipoInput"
+            aria-label="Tipo de movimentação"
+            required
+            aria-required="true"
+            class="bg-inputBgLight text-white rounded px-3 py-2 font-semibold"
+          >
+            <option value="income" data-i18n="income">Receita</option>
+            <option value="expense" data-i18n="expense">Despesa</option>
+          </select>
+          <button
+            id="btnAdicionar"
+            type="submit"
+            aria-label="Adicionar movimentação"
+            data-i18n="addBtn"
+          >
+            Adicionar
+          </button>
+        </form>
+      </div>
+
+      <div class="mt-6 max-w-4xl mx-auto">
+        <h3 class="text-xl font-semibold mb-2" data-i18n="history">📜 Histórico de Movimentações</h3>
+        <ul id="historicoMovimentacoes" class="space-y-2 max-h-60 overflow-y-auto"></ul>
+      </div>
+    </section>
+
+    <!-- Relatórios -->
+    <section id="relatoriosPage" class="hidden" role="tabpanel" tabindex="0">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-semibold mb-4" data-i18n="historyReports">🗂 Histórico Mensal de Movimentos</h2>
+        <canvas id="graficoRelatorio" aria-label="Gráfico do relatório mensal" role="img"></canvas>
+      </div>
+    </section>
+
+    <!-- Configurações -->
+    <section id="configPage" class="hidden max-w-4xl mx-auto" role="tabpanel" tabindex="0">
+      <h2 class="text-2xl font-semibold mb-4" data-i18n="settingsTitle">⚙️ Configurações</h2>
+      <form id="configForm" class="space-y-4" aria-label="Configurações de acessibilidade e idioma">
+        <div>
+          <label for="modoCor" class="block font-semibold mb-1" data-i18n="colorModeLabel">Modo de cor:</label>
+          <select id="modoCor" class="w-full rounded border border-gray-400 p-2 dark:bg-[#1f2937] dark:text-white" aria-describedby="modoCorHelp">
+            <option value="auto" data-i18n="colorAuto">Automático</option>
+            <option value="light" data-i18n="colorLight">Claro</option>
+            <option value="dark" data-i18n="colorDark">Escuro</option>
+          </select>
+          <p id="modoCorHelp" class="text-sm text-secondary mt-1">Modo claro, escuro ou automático conforme o sistema.</p>
+        </div>
+        <div>
+          <label for="brilhoControle" class="block font-semibold mb-1" data-i18n="brightnessLabel">Brilho da tela:</label>
+          <input
+            type="range"
+            id="brilhoControle"
+            min="0.5"
+            max="1.5"
+            step="0.01"
+            value="1"
+            class="w-full"
+            aria-valuemin="0.5"
+            aria-valuemax="1.5"
+            aria-valuenow="1"
+            aria-label="Controle de brilho da tela"
+          />
+        </div>
+        <div>
+          <label for="idiomaSelect" class="block font-semibold mb-1" data-i18n="languageLabel">Idioma:</label>
+          <select id="idiomaSelect" class="w-full rounded border border-gray-400 p-2 dark:bg-[#1f2937] dark:text-white" aria-label="Seleção de idioma">
+            <option value="pt" selected>Português (Brasil)</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="it">Italiano</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
+        <div>
+          <label for="saldoMinimoInput" class="block font-semibold mb-1" data-i18n="minBalanceLabel">Alerta de saldo mínimo:</label>
+          <input
+            type="number"
+            id="saldoMinimoInput"
+            min="0"
+            step="0.01"
+            class="w-full rounded border border-gray-400 p-2 dark:bg-[#1f2937] dark:text-white"
+            aria-label="Alerta de saldo mínimo"
+          />
+        </div>
+        <button type="button" onclick="salvarConfiguracoes()" class="px-4 py-2 bg-primary text-white rounded font-semibold hover:bg-blue-700" data-i18n="saveBtn" aria-label="Salvar configurações">Salvar</button>
+      </form>
+    </section>
+
+    <!-- Alertas -->
+    <section id="alertasPage" class="hidden max-w-4xl mx-auto" role="tabpanel" tabindex="0">
+      <h2 class="text-2xl font-semibold mb-4" data-i18n="alertsTitle">⚠️ Spike! Alertas</h2>
+      <div id="alertasChat" aria-live="polite" aria-atomic="true" role="log"></div>
+    </section>
+
+    <!-- Botão e chat suporte AI -->
+    <div id="supportIcon" role="button" tabindex="0" aria-label="Abrir suporte AI">💬</div>
+    <div id="supportChat" role="dialog" aria-modal="true" aria-labelledby="supportChatTitle">
+      <header id="supportChatTitle">AI Support</header>
+      <div id="supportChatMessages"></div>
+      <input id="supportInput" type="text" placeholder="Type your question and I'll reply..." aria-label="Digite sua pergunta para suporte AI" />
+    </div>
+  </main>
+
+  <script>
+    // Traduções
+    const translations = {
+      pt: {
+        title: "📊 SmartAccount AI",
+        logout: "Sair",
+        tabDashboard: "Dashboard",
+        tabReports: "Relatórios",
+        tabSettings: "Configurações",
+        tabAlerts: "Alertas",
+        revenue: "Faturamento",
+        expenses: "Despesas",
+        profit: "Lucro",
+        addMovement: "➕ Adicionar Movimentação",
+        descPlaceholder: "Descrição",
+        valuePlaceholder: "Valor",
+        income: "Receita",
+        expense: "Despesa",
+        addBtn: "Adicionar",
+        history: "📜 Histórico de Movimentações",
+        historyReports: "🗂 Histórico Mensal de Movimentos",
+        settingsTitle: "⚙️ Configurações",
+        colorModeLabel: "Modo de cor:",
+        colorAuto: "Automático",
+        colorLight: "Claro",
+        colorDark: "Escuro",
+        brightnessLabel: "Brilho da tela:",
+        languageLabel: "Idioma:",
+        minBalanceLabel: "Alerta de saldo mínimo:",
+        saveBtn: "Salvar",
+        alertsTitle: "⚠️ Spike! Alertas",
+        supportTitle: "Suporte AI",
+        supportPlaceholder: "Digite sua pergunta e eu respondo...",
+      },
+      en: {
+        title: "📊 SmartAccount AI",
+        logout: "Logout",
+        tabDashboard: "Dashboard",
+        tabReports: "Reports",
+        tabSettings: "Settings",
+        tabAlerts: "Alerts",
+        revenue: "Income",
+        expenses: "Expense",
+        profit: "Profit",
+        addMovement: "➕ Add Movement",
+        descPlaceholder: "Description",
+        valuePlaceholder: "Value",
+        income: "Income",
+        expense: "Expense",
+        addBtn: "Add",
+        history: "📜 Movement History",
+        historyReports: "🗂 Monthly Movement History",
+        settingsTitle: "⚙️ Settings",
+        colorModeLabel: "Color Mode:",
+        colorAuto: "Automatic",
+        colorLight: "Light",
+        colorDark: "Dark",
+        brightnessLabel: "Screen Brightness:",
+        languageLabel: "Language:",
+        minBalanceLabel: "Minimum Balance Alert:",
+        saveBtn: "Save",
+        alertsTitle: "⚠️ Spike! Alerts",
+        supportTitle: "AI Support",
+        supportPlaceholder: "Type your question and I'll reply...",
+      },
+      es: {
+        title: "📊 SmartAccount AI",
+        logout: "Cerrar sesión",
+        tabDashboard: "Tablero",
+        tabReports: "Informes",
+        tabSettings: "Configuraciones",
+        tabAlerts: "Alertas",
+        revenue: "Ingresos",
+        expenses: "Gastos",
+        profit: "Ganancia",
+        addMovement: "➕ Añadir Movimiento",
+        descPlaceholder: "Descripción",
+        valuePlaceholder: "Valor",
+        income: "Ingreso",
+        expense: "Gasto",
+        addBtn: "Añadir",
+        history: "📜 Historial de Movimientos",
+        historyReports: "🗂 Historial Mensual de Movimientos",
+        settingsTitle: "⚙️ Configuraciones",
+        colorModeLabel: "Modo de Color:",
+        colorAuto: "Automático",
+        colorLight: "Claro",
+        colorDark: "Oscuro",
+        brightnessLabel: "Brillo de Pantalla:",
+        languageLabel: "Idioma:",
+        minBalanceLabel: "Alerta mínima de saldo:",
+        saveBtn: "Guardar",
+        alertsTitle: "⚠️ Spike! Alertas",
+        supportTitle: "Soporte AI",
+        supportPlaceholder: "Escribe tu duda y te respondo...",
+      },
+      it: {
+        title: "📊 SmartAccount AI",
+        logout: "Esci",
+        tabDashboard: "Dashboard",
+        tabReports: "Report",
+        tabSettings: "Impostazioni",
+        tabAlerts: "Avvisi",
+        revenue: "Fatturato",
+        expenses: "Spese",
+        profit: "Profitto",
+        addMovement: "➕ Aggiungi Movimento",
+        descPlaceholder: "Descrizione",
+        valuePlaceholder: "Valore",
+        income: "Entrate",
+        expense: "Spese",
+        addBtn: "Aggiungi",
+        history: "📜 Storico Movimenti",
+        historyReports: "🗂 Storico Mensile Movimenti",
+        settingsTitle: "⚙️ Impostazioni",
+        colorModeLabel: "Modalità Colore:",
+        colorAuto: "Automatico",
+        colorLight: "Chiaro",
+        colorDark: "Scuro",
+        brightnessLabel: "Luminosità Schermo:",
+        languageLabel: "Lingua:",
+        minBalanceLabel: "Avviso saldo minimo:",
+        saveBtn: "Salva",
+        alertsTitle: "⚠️ Spike! Avvisi",
+        supportTitle: "Supporto AI",
+        supportPlaceholder: "Scrivi la tua domanda e ti rispondo...",
+      },
+      de: {
+        title: "📊 SmartAccount AI",
+        logout: "Abmelden",
+        tabDashboard: "Dashboard",
+        tabReports: "Berichte",
+        tabSettings: "Einstellungen",
+        tabAlerts: "Warnungen",
+        revenue: "Umsatz",
+        expenses: "Ausgaben",
+        profit: "Gewinn",
+        addMovement: "➕ Bewegung hinzufügen",
+        descPlaceholder: "Beschreibung",
+        valuePlaceholder: "Wert",
+        income: "Einnahmen",
+        expense: "Ausgaben",
+        addBtn: "Hinzufügen",
+        history: "📜 Bewegungsverlauf",
+        historyReports: "🗂 Monatlicher Bewegungsverlauf",
+        settingsTitle: "⚙️ Einstellungen",
+        colorModeLabel: "Farbmodus:",
+        colorAuto: "Automatisch",
+        colorLight: "Hell",
+        colorDark: "Dunkel",
+        brightnessLabel: "Bildschirmhelligkeit:",
+        languageLabel: "Sprache:",
+        minBalanceLabel: "Mindestguthaben Warnung:",
+        saveBtn: "Speichern",
+        alertsTitle: "⚠️ Spike! Warnungen",
+        supportTitle: "KI-Support",
+        supportPlaceholder: "Geben Sie Ihre Frage ein und ich antworte...",
+      }
+    };
+
+    // Atualiza textos e placeholders
+    function atualizarIdioma(lang) {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang] && translations[lang][key]) {
+          el.setAttribute('placeholder', translations[lang][key]);
+        }
+      });
+    }
+
+    // Salvar configs no localStorage
+    function salvarConfiguracoes() {
+      const modoCor = document.getElementById('modoCor').value;
+      const brilho = document.getElementById('brilhoControle').value;
+      const idioma = document.getElementById('idiomaSelect').value;
+      const saldoMinimo = parseFloat(document.getElementById('saldoMinimoInput').value) || 0;
+
+      localStorage.setItem('config_modoCor', modoCor);
+      localStorage.setItem('config_brilho', brilho);
+      localStorage.setItem('config_idioma', idioma);
+      localStorage.setItem('config_saldoMinimo', saldoMinimo);
+
+      aplicarConfiguracoes();
+      alert(translations[idioma].saveBtn + '!');
+    }
+
+    // Aplica configs na interface
+    function aplicarConfiguracoes() {
+      let modoCor = localStorage.getItem('config_modoCor') || 'auto';
+      let brilho = localStorage.getItem('config_brilho') || '1';
+      let idioma = localStorage.getItem('config_idioma') || 'pt';
+
+      // Atualiza controles
+      document.getElementById('modoCor').value = modoCor;
+      document.getElementById('brilhoControle').value = brilho;
+      document.getElementById('idiomaSelect').value = idioma;
+
+      // Brilho via filter CSS
+      document.body.style.setProperty('--brightness', brilho);
+
+      // Modo cor
+      if (modoCor === 'auto') {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else if (modoCor === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      // Atualiza idioma
+      atualizarIdioma(idioma);
+    }
+
+    // Tabs navegação
+    function showPage(pageId) {
+      const pages = ['dashboardPageContent', 'relatoriosPage', 'configPage', 'alertasPage'];
+      pages.forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== pageId);
+      });
+      ['tab-dashboard', 'tab-relatorios', 'tab-config', 'tab-alertas'].forEach(id => {
+        document.getElementById(id).classList.toggle('active', id === 'tab-' + pageId.replace('PageContent','').toLowerCase());
+      });
+    }
+
+    // Dados usuários locais
+    let isLogin = true;
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    let currentUser = null;
+
+    function toggleAuth() {
+      isLogin = !isLogin;
+      document.getElementById('authTitle').textContent = isLogin ? '🔐 Entrar' : '🆕 Criar nova conta';
+      document.getElementById('authToggleText').textContent = isLogin ? 'Não tem conta?' : 'Já tem conta?';
+      const toggleBtn = document.getElementById('authToggleBtn');
+      toggleBtn.textContent = isLogin ? 'Cadastre-se' : 'Fazer login';
+      toggleBtn.setAttribute('aria-pressed', !isLogin);
+    }
+
+    function authAction() {
+      const user = document.getElementById('authUsername').value.trim();
+      const pass = document.getElementById('authPassword').value.trim();
+      if (!user || !pass) return alert('Preencha todos os campos!');
+      if (isLogin) {
+        const found = users.find(u => u.user === user && u.pass === pass);
+        if (!found) return alert('Credenciais inválidas.');
+        currentUser = found;
+      } else {
+        if (users.some(u => u.user === user)) return alert('Usuário já existe.');
+        const newUser = { user, pass, plano: null, movimentacoes: [] };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        currentUser = newUser;
+      }
+      proceedToApp();
+    }
+
+    function proceedToApp() {
+      document.getElementById('authPage').style.display = 'none';
+      document.getElementById('dashboardPage').classList.remove('hidden');
+      showPage('dashboardPageContent');
+      aplicarConfiguracoes();
+      carregarMovimentacoes();
+      atualizarResumo();
+      renderizarGrafico();
+    }
+
+    // Logout simples
+    function logout() {
+      if(confirm('Deseja realmente sair?')) {
+        currentUser = null;
+        document.getElementById('authPage').style.display = 'flex';
+        document.getElementById('dashboardPage').classList.add('hidden');
+        clearDashboard();
+      }
+    }
+
+    // Limpa dashboard ao sair
+    function clearDashboard() {
+      document.getElementById('historicoMovimentacoes').innerHTML = '';
+      document.getElementById('faturamento').textContent = '0.00';
+      document.getElementById('despesas').textContent = '0.00';
+      document.getElementById('lucro').textContent = '0.00';
+    }
+
+    // Movimentações
+    const formMovimentacao = document.getElementById('movimentacaoForm');
+    formMovimentacao.addEventListener('submit', e => {
+      e.preventDefault();
+      adicionarMovimentacao();
+    });
+
+    function adicionarMovimentacao() {
+      const desc = document.getElementById('descInput').value.trim();
+      const valor = parseFloat(document.getElementById('valorInput').value);
+      const tipo = document.getElementById('tipoInput').value;
+
+      if(!desc || isNaN(valor) || valor <= 0) {
+        alert('Preencha descrição e valor válidos.');
+        return;
+      }
+      currentUser.movimentacoes.push({ desc, valor, tipo, data: new Date().toISOString() });
+      salvarUsuarioAtual();
+      carregarMovimentacoes();
+      atualizarResumo();
+      renderizarGrafico();
+
+      // Limpar inputs
+      document.getElementById('descInput').value = '';
+      document.getElementById('valorInput').value = '';
+      document.getElementById('tipoInput').value = 'income';
+    }
+
+    // Salvar usuário no localStorage
+    function salvarUsuarioAtual() {
+      const index = users.findIndex(u => u.user === currentUser.user);
+      if(index > -1) {
+        users[index] = currentUser;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+    }
+
+    // Carregar movimentações na lista
+    function carregarMovimentacoes() {
+      const lista = document.getElementById('historicoMovimentacoes');
+      lista.innerHTML = '';
+      if(!currentUser.movimentacoes.length) {
+        lista.innerHTML = '<li class="text-center italic text-secondary">Nenhuma movimentação registrada.</li>';
+        return;
+      }
+      currentUser.movimentacoes.slice().reverse().forEach(mov => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between bg-inputBgLight text-white p-2 rounded shadow';
+        li.innerHTML = `
+          <span>${mov.desc} <small class="text-xs opacity-70">(${new Date(mov.data).toLocaleDateString()})</small></span>
+          <span class="${mov.tipo === 'expense' ? 'text-red-400' : 'text-green-400'} font-semibold">R$ ${mov.valor.toFixed(2)}</span>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    // Atualiza os totais no dashboard
+    function atualizarResumo() {
+      let totalReceita = 0, totalDespesa = 0;
+      currentUser.movimentacoes.forEach(mov => {
+        if(mov.tipo === 'income') totalReceita += mov.valor;
+        else if(mov.tipo === 'expense') totalDespesa += mov.valor;
+      });
+      document.getElementById('faturamento').textContent = totalReceita.toFixed(2);
+      document.getElementById('despesas').textContent = totalDespesa.toFixed(2);
+      document.getElementById('lucro').textContent = (totalReceita - totalDespesa).toFixed(2);
+    }
+
+    // Gráfico de relatório mensal
+    let graficoRelatorio = null;
+    function renderizarGrafico() {
+      const ctx = document.getElementById('graficoRelatorio').getContext('2d');
+
+      // Agrupa movimentações por mês (YYYY-MM)
+      const movimentacoesPorMes = {};
+      currentUser.movimentacoes.forEach(mov => {
+        const d = new Date(mov.data);
+        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        if(!movimentacoesPorMes[key]) movimentacoesPorMes[key] = { income: 0, expense: 0 };
+        movimentacoesPorMes[key][mov.tipo] += mov.valor;
+      });
+
+      // Ordena e cria arrays para labels e dados
+      const labels = Object.keys(movimentacoesPorMes).sort();
+      const incomes = labels.map(l => movimentacoesPorMes[l].income);
+      const expenses = labels.map(l => movimentacoesPorMes[l].expense);
+
+      if(graficoRelatorio) graficoRelatorio.destroy();
+
+      graficoRelatorio = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: translations[localStorage.getItem('config_idioma') || 'pt'].income,
+              data: incomes,
+              backgroundColor: '#22c55e',
+            },
+            {
+              label: translations[localStorage.getItem('config_idioma') || 'pt'].expense,
+              data: expenses,
+              backgroundColor: '#ef4444',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: { position: 'top' }
+          }
+        }
+      });
+    }
+
+    // Inicialização
+    aplicarConfiguracoes();
+
+    // Suporte AI - simples toggle e mock de respostas
+    const supportIcon = document.getElementById('supportIcon');
+    const supportChat = document.getElementById('supportChat');
+    const supportMessages = document.getElementById('supportChatMessages');
+    const supportInput = document.getElementById('supportInput');
+
+    supportIcon.addEventListener('click', () => {
+      if(supportChat.style.display === 'flex') {
+        supportChat.style.display = 'none';
+      } else {
+        supportChat.style.display = 'flex';
+        supportInput.focus();
+      }
+    });
+
+    supportIcon.addEventListener('keypress', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        supportIcon.click();
+      }
+    });
+
+    supportInput.addEventListener('keydown', e => {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        const msg = supportInput.value.trim();
+        if(!msg) return;
+        adicionarMensagemSuporte(msg, 'user');
+        supportInput.value = '';
+        setTimeout(() => {
+          adicionarMensagemSuporte('Obrigado pela sua pergunta! No momento, suporte AI ainda está em desenvolvimento.', 'ai');
+        }, 1000);
+      }
+    });
+
+    function adicionarMensagemSuporte(texto, tipo) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (tipo === 'user' ? 'info' : 'support');
+      div.textContent = texto;
+      supportMessages.appendChild(div);
+      supportMessages.scrollTop = supportMessages.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
+ 
